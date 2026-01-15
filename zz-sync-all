@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ensure we're in a git repo
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "Not inside a git repository." >&2
+  exit 1
+fi
+
+# Ensure working tree is clean; avoids accidental conflicts
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Working tree is not clean. Commit or stash your changes first." >&2
+  exit 1
+fi
+
+# Sync dev from upstream, then rebase main on dev, then push main to origin
+
+git fetch upstream
+
+git checkout dev
+# Prefer upstream/dev regardless of local tracking config
+if git show-ref --verify --quiet refs/remotes/upstream/dev; then
+  git pull upstream dev
+else
+  echo "No upstream/dev found. Did you add the upstream remote?" >&2
+  exit 1
+fi
+
+git checkout main
+# Rebase main onto dev
+if git show-ref --verify --quiet refs/heads/dev; then
+  git rebase dev
+else
+  echo "Local dev branch not found." >&2
+  exit 1
+fi
+
+# Push rebased main to origin
+if git remote get-url origin >/dev/null 2>&1; then
+  git push --force-with-lease origin main
+else
+  echo "Origin remote not found." >&2
+  exit 1
+fi
+
+echo "Done: dev synced from upstream, main rebased on dev, main pushed to origin."

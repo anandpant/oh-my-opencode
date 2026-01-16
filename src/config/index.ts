@@ -9,6 +9,7 @@ export type {
   McpName,
   OhMyOpenCodeConfig,
   RalphLoopConfig,
+  SessionAutoExportConfig,
   SisyphusAgentConfig,
   TestingAgentTriggerConfig,
 } from "./schema";
@@ -22,6 +23,7 @@ export {
   McpNameSchema,
   OhMyOpenCodeConfigSchema,
   RalphLoopConfigSchema,
+  SessionAutoExportConfigSchema,
   SisyphusAgentConfigSchema,
   TestingAgentTriggerConfigSchema,
 } from "./schema";

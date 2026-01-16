@@ -149,10 +149,7 @@ export function createSisyphusJuniorAgentWithOverrides(
     return { ...base, reasoningEffort: "medium" } as AgentConfig;
   }
 
-  return {
-    ...base,
-    thinking: { type: "enabled", budgetTokens: 32_000 },
-  } as AgentConfig;
+  return { ...base } as AgentConfig;
 }
 
 export function createSisyphusJuniorAgent(
@@ -185,10 +182,6 @@ export function createSisyphusJuniorAgent(
     base.top_p = categoryConfig.top_p;
   }
 
-  if (categoryConfig.thinking) {
-    return { ...base, thinking: categoryConfig.thinking } as AgentConfig;
-  }
-
   if (categoryConfig.reasoningEffort) {
     return {
       ...base,
@@ -201,8 +194,5 @@ export function createSisyphusJuniorAgent(
     return { ...base, reasoningEffort: "medium" } as AgentConfig;
   }
 
-  return {
-    ...base,
-    thinking: { type: "enabled", budgetTokens: 32_000 },
-  } as AgentConfig;
+  return { ...base } as AgentConfig;
 }

@@ -1,5 +1,9 @@
 export { createAgentUsageReminderHook } from "./agent-usage-reminder";
 export {
+  createSessionAutoExport,
+  type SessionAutoExportConfig,
+} from "./session-auto-export";
+export {
   type AnthropicContextWindowLimitRecoveryOptions,
   createAnthropicContextWindowLimitRecoveryHook,
 } from "./anthropic-context-window-limit-recovery";

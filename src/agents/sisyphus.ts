@@ -642,7 +642,7 @@ export function createSisyphusAgent(
   };
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "high" };
+    return { ...base, reasoningEffort: "medium" };
   }
 
   return { ...base, thinking: { type: "enabled", budgetTokens: 32_000 } };

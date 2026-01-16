@@ -56,6 +56,7 @@ import {
   createThinkModeHook,
   createTodoContinuationEnforcer,
   createToolOutputTruncatorHook,
+  createSessionAutoExport,
 } from "./hooks";
 import { loadPluginConfig } from "./plugin-config";
 import { createConfigHandler } from "./plugin-handlers";
@@ -123,6 +124,10 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       sessionNotification = createSessionNotification(ctx);
     }
   }
+
+  const sessionAutoExport = isHookEnabled("session-auto-export")
+    ? createSessionAutoExport(ctx, pluginConfig.session_auto_export)
+    : null;
 
   const commentChecker = isHookEnabled("comment-checker")
     ? createCommentCheckerHooks(pluginConfig.comment_checker)
@@ -432,6 +437,7 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       await claudeCodeHooks.event(input);
       await backgroundNotificationHook?.event(input);
       await sessionNotification?.(input);
+      await sessionAutoExport?.(input);
       await todoContinuationEnforcer?.handler(input);
       await contextWindowMonitor?.event(input);
       await directoryAgentsInjector?.event(input);

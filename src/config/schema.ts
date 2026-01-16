@@ -89,6 +89,7 @@ export const HookNameSchema = z.enum([
   "start-work",
   "sisyphus-orchestrator",
   "testing-agent-trigger",
+  "session-auto-export",
 ]);
 
 export const BuiltinCommandNameSchema = z.enum(["init-deep", "start-work"]);
@@ -334,6 +335,15 @@ export const TestingAgentTriggerConfigSchema = z.object({
   scenarioDir: z.string().default("test_scenarios/agent-browser"),
 });
 
+export const SessionAutoExportConfigSchema = z.object({
+  convexUrl: z.string().optional(),
+  includeMessages: z.boolean().default(false),
+  includeTodos: z.boolean().default(true),
+  debounceMs: z.number().min(1000).max(30000).default(5000),
+  skipSubagentSessions: z.boolean().default(true),
+  maxTrackedSessions: z.number().min(10).max(1000).default(100),
+});
+
 export const OhMyOpenCodeConfigSchema = z.object({
   $schema: z.string().optional(),
   disabled_mcps: z.array(AnyMcpNameSchema).optional(),
@@ -354,6 +364,7 @@ export const OhMyOpenCodeConfigSchema = z.object({
   notification: NotificationConfigSchema.optional(),
   git_master: GitMasterConfigSchema.optional(),
   testing_agent_trigger: TestingAgentTriggerConfigSchema.optional(),
+  session_auto_export: SessionAutoExportConfigSchema.optional(),
 });
 
 export type OhMyOpenCodeConfig = z.infer<typeof OhMyOpenCodeConfigSchema>;
@@ -380,6 +391,9 @@ export type BuiltinCategoryName = z.infer<typeof BuiltinCategoryNameSchema>;
 export type GitMasterConfig = z.infer<typeof GitMasterConfigSchema>;
 export type TestingAgentTriggerConfig = z.infer<
   typeof TestingAgentTriggerConfigSchema
+>;
+export type SessionAutoExportConfig = z.infer<
+  typeof SessionAutoExportConfigSchema
 >;
 
 export {

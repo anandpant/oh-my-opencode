@@ -31,6 +31,7 @@ import {
   createStartWorkHook,
   createAtlasHook,
   createPrometheusMdOnlyHook,
+  createTestingAgentTriggerHook,
 } from "./hooks";
 import {
   contextCollector,
@@ -204,6 +205,10 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
 
   const prometheusMdOnly = isHookEnabled("prometheus-md-only")
     ? createPrometheusMdOnlyHook(ctx)
+    : null;
+
+  const testingAgentTrigger = isHookEnabled("testing-agent-trigger")
+    ? createTestingAgentTriggerHook(ctx, pluginConfig.testing_agent_trigger)
     : null;
 
   const taskResumeInfo = createTaskResumeInfoHook();
@@ -485,6 +490,7 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       await directoryReadmeInjector?.["tool.execute.before"]?.(input, output);
       await rulesInjector?.["tool.execute.before"]?.(input, output);
       await prometheusMdOnly?.["tool.execute.before"]?.(input, output);
+      await testingAgentTrigger?.["tool.execute.before"]?.(input, output);
 
       if (input.tool === "task") {
         const args = output.args as Record<string, unknown>;

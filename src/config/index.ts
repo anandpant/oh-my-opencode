@@ -1,26 +1,27 @@
-export {
-  OhMyOpenCodeConfigSchema,
-  AgentOverrideConfigSchema,
-  AgentOverridesSchema,
-  McpNameSchema,
-  AgentNameSchema,
-  HookNameSchema,
-  BuiltinCommandNameSchema,
-  SisyphusAgentConfigSchema,
-  ExperimentalConfigSchema,
-  RalphLoopConfigSchema,
-} from "./schema"
-
 export type {
-  OhMyOpenCodeConfig,
+  AgentName,
   AgentOverrideConfig,
   AgentOverrides,
-  McpName,
-  AgentName,
-  HookName,
   BuiltinCommandName,
-  SisyphusAgentConfig,
-  ExperimentalConfig,
   DynamicContextPruningConfig,
+  ExperimentalConfig,
+  HookName,
+  McpName,
+  OhMyOpenCodeConfig,
   RalphLoopConfig,
-} from "./schema"
+  SisyphusAgentConfig,
+  TestingAgentTriggerConfig,
+} from "./schema";
+export {
+  AgentNameSchema,
+  AgentOverrideConfigSchema,
+  AgentOverridesSchema,
+  BuiltinCommandNameSchema,
+  ExperimentalConfigSchema,
+  HookNameSchema,
+  McpNameSchema,
+  OhMyOpenCodeConfigSchema,
+  RalphLoopConfigSchema,
+  SisyphusAgentConfigSchema,
+  TestingAgentTriggerConfigSchema,
+} from "./schema";

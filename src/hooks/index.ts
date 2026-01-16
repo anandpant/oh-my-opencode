@@ -13,7 +13,7 @@ export { createCompactionContextInjector } from "./compaction-context-injector";
 export { createThinkModeHook } from "./think-mode";
 export { createClaudeCodeHooksHook } from "./claude-code-hooks";
 export { createRulesInjectorHook } from "./rules-injector";
-export { createBackgroundNotificationHook } from "./background-notification"
+export { createBackgroundNotificationHook } from "./background-notification";
 export { createAutoUpdateCheckerHook } from "./auto-update-checker";
 
 export { createAgentUsageReminderHook } from "./agent-usage-reminder";
@@ -30,3 +30,8 @@ export { createTaskResumeInfoHook } from "./task-resume-info";
 export { createStartWorkHook } from "./start-work";
 export { createAtlasHook } from "./atlas";
 export { createDelegateTaskRetryHook } from "./delegate-task-retry";
+export {
+  createTestingAgentTriggerHook,
+  type TestingAgentTriggerConfig,
+} from "./testing-agent-trigger";
+export type { TestingAgentTriggerConfig as TestingAgentTriggerConfigType } from "./testing-agent-trigger/types";

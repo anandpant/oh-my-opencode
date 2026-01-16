@@ -35,8 +35,8 @@ agents/
 | frontend-ui-ux | gemini-3-pro | Production-grade UI/UX generation and styling. |
 | document-writer | gemini-3-pro | Technical writing, guides, API documentation. |
 | Prometheus | claude-opus-4-5 | Strategic planner. Interview mode, orchestrates Metis/Momus. |
-| Metis | claude-sonnet-4-5 | Plan Consultant. Pre-planning risk/requirement analysis. |
-| Momus | claude-sonnet-4-5 | Plan Reviewer. Validation and quality enforcement. |
+| Metis | claude-opus-4-5 | Plan Consultant. Pre-planning risk/requirement analysis. |
+| Momus | openai/gpt-5.2 | Plan Reviewer. Validation and quality enforcement. |
 
 ## HOW TO ADD AN AGENT
 1. Create `src/agents/my-agent.ts` exporting `AgentConfig`.

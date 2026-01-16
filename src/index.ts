@@ -1,82 +1,88 @@
 import type { Plugin } from "@opencode-ai/plugin";
+import type { HookName } from "./config";
+import { BackgroundManager } from "./features/background-agent";
+import { createBuiltinSkills } from "./features/builtin-skills";
+import { getSystemMcpServerNames } from "./features/claude-code-mcp-loader";
 import {
-  createTodoContinuationEnforcer,
-  createContextWindowMonitorHook,
-  createSessionRecoveryHook,
-  createSessionNotification,
-  createCommentCheckerHooks,
-  createToolOutputTruncatorHook,
-  createDirectoryAgentsInjectorHook,
-  createDirectoryReadmeInjectorHook,
-  createEmptyTaskResponseDetectorHook,
-  createThinkModeHook,
-  createClaudeCodeHooksHook,
-  createAnthropicContextWindowLimitRecoveryHook,
-  createPreemptiveCompactionHook,
-  createCompactionContextInjector,
-  createRulesInjectorHook,
-  createBackgroundNotificationHook,
-  createAutoUpdateCheckerHook,
-  createKeywordDetectorHook,
-  createAgentUsageReminderHook,
-  createNonInteractiveEnvHook,
-  createInteractiveBashSessionHook,
-  createEmptyMessageSanitizerHook,
-  createThinkingBlockValidatorHook,
-  createRalphLoopHook,
-  createAutoSlashCommandHook,
-  createEditErrorRecoveryHook,
-  createSisyphusTaskRetryHook,
-  createTaskResumeInfoHook,
-  createStartWorkHook,
-  createSisyphusOrchestratorHook,
-  createPrometheusMdOnlyHook,
-} from "./hooks";
+  clearSessionAgent,
+  getMainSessionID,
+  setMainSession,
+  setSessionAgent,
+} from "./features/claude-code-session-state";
 import {
   contextCollector,
   createContextInjectorHook,
   createContextInjectorMessagesTransformHook,
 } from "./features/context-injector";
+import {
+  discoverOpencodeGlobalSkills,
+  discoverOpencodeProjectSkills,
+  discoverProjectClaudeSkills,
+  discoverUserClaudeSkills,
+  mergeSkills,
+} from "./features/opencode-skill-loader";
+import { SkillMcpManager } from "./features/skill-mcp-manager";
+import { initTaskToastManager } from "./features/task-toast-manager";
+import {
+  createAgentUsageReminderHook,
+  createAnthropicContextWindowLimitRecoveryHook,
+  createAutoSlashCommandHook,
+  createAutoUpdateCheckerHook,
+  createBackgroundNotificationHook,
+  createClaudeCodeHooksHook,
+  createCommentCheckerHooks,
+  createCompactionContextInjector,
+  createContextWindowMonitorHook,
+  createDirectoryAgentsInjectorHook,
+  createDirectoryReadmeInjectorHook,
+  createEditErrorRecoveryHook,
+  createEmptyMessageSanitizerHook,
+  createEmptyTaskResponseDetectorHook,
+  createInteractiveBashSessionHook,
+  createKeywordDetectorHook,
+  createNonInteractiveEnvHook,
+  createPreemptiveCompactionHook,
+  createPrometheusMdOnlyHook,
+  createRalphLoopHook,
+  createRulesInjectorHook,
+  createSessionNotification,
+  createSessionRecoveryHook,
+  createSisyphusOrchestratorHook,
+  createSisyphusTaskRetryHook,
+  createStartWorkHook,
+  createTaskResumeInfoHook,
+  createTestingAgentTriggerHook,
+  createThinkingBlockValidatorHook,
+  createThinkModeHook,
+  createTodoContinuationEnforcer,
+  createToolOutputTruncatorHook,
+} from "./hooks";
+import { loadPluginConfig } from "./plugin-config";
+import { createConfigHandler } from "./plugin-handlers";
+import { createModelCacheState, getModelLimit } from "./plugin-state";
+import {
+  detectExternalNotificationPlugin,
+  getNotificationConflictWarning,
+  log,
+  resetMessageCursor,
+} from "./shared";
 import { applyAgentVariant, resolveAgentVariant } from "./shared/agent-variant";
 import { createFirstMessageVariantGate } from "./shared/first-message-variant";
 import {
-  discoverUserClaudeSkills,
-  discoverProjectClaudeSkills,
-  discoverOpencodeGlobalSkills,
-  discoverOpencodeProjectSkills,
-  mergeSkills,
-} from "./features/opencode-skill-loader";
-import { createBuiltinSkills } from "./features/builtin-skills";
-import { getSystemMcpServerNames } from "./features/claude-code-mcp-loader";
-import {
-  setMainSession,
-  getMainSessionID,
-  setSessionAgent,
-  clearSessionAgent,
-} from "./features/claude-code-session-state";
-import {
   builtinTools,
-  createCallOmoAgent,
   createBackgroundTools,
+  createCallOmoAgent,
   createLookAt,
-  createSkillTool,
+  createSisyphusTask,
   createSkillMcpTool,
+  createSkillTool,
   createSlashcommandTool,
   discoverCommandsSync,
-  sessionExists,
-  createSisyphusTask,
   interactive_bash,
-  startTmuxCheck,
   lspManager,
+  sessionExists,
+  startTmuxCheck,
 } from "./tools";
-import { BackgroundManager } from "./features/background-agent";
-import { SkillMcpManager } from "./features/skill-mcp-manager";
-import { initTaskToastManager } from "./features/task-toast-manager";
-import { type HookName } from "./config";
-import { log, detectExternalNotificationPlugin, getNotificationConflictWarning, resetMessageCursor } from "./shared";
-import { loadPluginConfig } from "./plugin-config";
-import { createModelCacheState, getModelLimit } from "./plugin-state";
-import { createConfigHandler } from "./plugin-handlers";
 
 const OhMyOpenCodePlugin: Plugin = async (ctx) => {
   // Start background tmux check immediately
@@ -93,18 +99,22 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
     ? createContextWindowMonitorHook(ctx)
     : null;
   const sessionRecovery = isHookEnabled("session-recovery")
-    ? createSessionRecoveryHook(ctx, { experimental: pluginConfig.experimental })
+    ? createSessionRecoveryHook(ctx, {
+        experimental: pluginConfig.experimental,
+      })
     : null;
-  
+
   // Check for conflicting notification plugins before creating session-notification
   let sessionNotification = null;
   if (isHookEnabled("session-notification")) {
     const forceEnable = pluginConfig.notification?.force_enable ?? false;
     const externalNotifier = detectExternalNotificationPlugin(ctx.directory);
-    
+
     if (externalNotifier.detected && !forceEnable) {
       // External notification plugin detected - skip our notification to avoid conflicts
-      console.warn(getNotificationConflictWarning(externalNotifier.pluginName!));
+      console.warn(
+        getNotificationConflictWarning(externalNotifier.pluginName!)
+      );
       log("session-notification disabled due to external notifier conflict", {
         detected: externalNotifier.pluginName,
         allPlugins: externalNotifier.allPlugins,
@@ -128,14 +138,17 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
   const directoryReadmeInjector = isHookEnabled("directory-readme-injector")
     ? createDirectoryReadmeInjectorHook(ctx)
     : null;
-  const emptyTaskResponseDetector = isHookEnabled("empty-task-response-detector")
+  const emptyTaskResponseDetector = isHookEnabled(
+    "empty-task-response-detector"
+  )
     ? createEmptyTaskResponseDetectorHook(ctx)
     : null;
   const thinkMode = isHookEnabled("think-mode") ? createThinkModeHook() : null;
   const claudeCodeHooks = createClaudeCodeHooksHook(
     ctx,
     {
-      disabledHooks: (pluginConfig.claude_code?.hooks ?? true) ? undefined : true,
+      disabledHooks:
+        (pluginConfig.claude_code?.hooks ?? true) ? undefined : true,
       keywordDetectorDisabled: !isHookEnabled("keyword-detector"),
     },
     contextCollector
@@ -261,12 +274,13 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
     return true;
   });
   const includeClaudeSkills = pluginConfig.claude_code?.skills !== false;
-  const [userSkills, globalSkills, projectSkills, opencodeProjectSkills] = await Promise.all([
-    includeClaudeSkills ? discoverUserClaudeSkills() : Promise.resolve([]),
-    discoverOpencodeGlobalSkills(),
-    includeClaudeSkills ? discoverProjectClaudeSkills() : Promise.resolve([]),
-    discoverOpencodeProjectSkills(),
-  ]);
+  const [userSkills, globalSkills, projectSkills, opencodeProjectSkills] =
+    await Promise.all([
+      includeClaudeSkills ? discoverUserClaudeSkills() : Promise.resolve([]),
+      discoverOpencodeGlobalSkills(),
+      includeClaudeSkills ? discoverProjectClaudeSkills() : Promise.resolve([]),
+      discoverOpencodeProjectSkills(),
+    ]);
   const mergedSkills = mergeSkills(
     builtinSkills,
     pluginConfig.skills,
@@ -298,6 +312,10 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
     ? createAutoSlashCommandHook({ skills: mergedSkills })
     : null;
 
+  const testingAgentTrigger = isHookEnabled("testing-agent-trigger")
+    ? createTestingAgentTriggerHook(ctx, pluginConfig.testing_agent_trigger)
+    : null;
+
   const configHandler = createConfigHandler({
     ctx,
     pluginConfig,
@@ -318,15 +336,15 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
     },
 
     "chat.message": async (input, output) => {
-      const message = (output as { message: { variant?: string } }).message
+      const message = (output as { message: { variant?: string } }).message;
       if (firstMessageVariantGate.shouldOverride(input.sessionID)) {
-        const variant = resolveAgentVariant(pluginConfig, input.agent)
+        const variant = resolveAgentVariant(pluginConfig, input.agent);
         if (variant !== undefined) {
-          message.variant = variant
+          message.variant = variant;
         }
-        firstMessageVariantGate.markApplied(input.sessionID)
+        firstMessageVariantGate.markApplied(input.sessionID);
       } else {
-        applyAgentVariant(pluginConfig, input.agent, message)
+        applyAgentVariant(pluginConfig, input.agent, message);
       }
 
       await keywordDetector?.["chat.message"]?.(input, output);
@@ -376,7 +394,7 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
           });
           ralphLoop.startLoop(input.sessionID, prompt, {
             maxIterations: maxIterMatch
-              ? parseInt(maxIterMatch[1], 10)
+              ? Number.parseInt(maxIterMatch[1], 10)
               : undefined,
             completionPromise: promiseMatch?.[1],
           });
@@ -394,7 +412,9 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       output: { messages: Array<{ info: unknown; parts: unknown[] }> }
     ) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await contextInjectorMessagesTransform?.["experimental.chat.messages.transform"]?.(input, output as any);
+      await contextInjectorMessagesTransform?.[
+        "experimental.chat.messages.transform"
+      ]?.(input, output as any);
       await thinkingBlockValidator?.[
         "experimental.chat.messages.transform"
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -497,6 +517,7 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       await directoryReadmeInjector?.["tool.execute.before"]?.(input, output);
       await rulesInjector?.["tool.execute.before"]?.(input, output);
       await prometheusMdOnly?.["tool.execute.before"]?.(input, output);
+      await testingAgentTrigger?.["tool.execute.before"]?.(input, output);
 
       if (input.tool === "task") {
         const args = output.args as Record<string, unknown>;
@@ -533,7 +554,7 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
 
           ralphLoop.startLoop(sessionID, prompt, {
             maxIterations: maxIterMatch
-              ? parseInt(maxIterMatch[1], 10)
+              ? Number.parseInt(maxIterMatch[1], 10)
               : undefined,
             completionPromise: promiseMatch?.[1],
           });
@@ -554,9 +575,9 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       await emptyTaskResponseDetector?.["tool.execute.after"](input, output);
       await agentUsageReminder?.["tool.execute.after"](input, output);
       await interactiveBashSession?.["tool.execute.after"](input, output);
-await editErrorRecovery?.["tool.execute.after"](input, output);
-        await sisyphusTaskRetry?.["tool.execute.after"](input, output);
-        await sisyphusOrchestrator?.["tool.execute.after"]?.(input, output);
+      await editErrorRecovery?.["tool.execute.after"](input, output);
+      await sisyphusTaskRetry?.["tool.execute.after"](input, output);
+      await sisyphusOrchestrator?.["tool.execute.after"]?.(input, output);
       await taskResumeInfo["tool.execute.after"](input, output);
     },
   };
@@ -565,13 +586,13 @@ await editErrorRecovery?.["tool.execute.after"](input, output);
 export default OhMyOpenCodePlugin;
 
 export type {
-  OhMyOpenCodeConfig,
   AgentName,
   AgentOverrideConfig,
   AgentOverrides,
-  McpName,
-  HookName,
   BuiltinCommandName,
+  HookName,
+  McpName,
+  OhMyOpenCodeConfig,
 } from "./config";
 
 // NOTE: Do NOT export functions from main index.ts!

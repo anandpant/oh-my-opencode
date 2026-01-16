@@ -1,4 +1,4 @@
-import type { CategoryConfig } from "../../config/schema"
+import type { CategoryConfig } from "../../config/schema";
 
 export const VISUAL_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on VISUAL/UI tasks.
@@ -12,7 +12,7 @@ Design-first mindset:
 - Atmosphere: gradient meshes, noise textures, layered transparencies
 
 AVOID: Generic fonts, purple gradients on white, predictable layouts, cookie-cutter patterns.
-</Category_Context>`
+</Category_Context>`;
 
 export const STRATEGIC_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on BUSINESS LOGIC / ARCHITECTURE tasks.
@@ -28,7 +28,7 @@ Response format:
 - Bottom line (2-3 sentences)
 - Action plan (numbered steps)
 - Risks and mitigations (if relevant)
-</Category_Context>`
+</Category_Context>`;
 
 export const ARTISTRY_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on HIGHLY CREATIVE / ARTISTIC tasks.
@@ -45,7 +45,7 @@ Approach:
 - Embrace ambiguity and wild experimentation
 - Balance novelty with coherence
 - This is for tasks requiring exceptional creativity
-</Category_Context>`
+</Category_Context>`;
 
 export const QUICK_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on SMALL / QUICK tasks.
@@ -97,7 +97,7 @@ EXPECTED OUTPUT:
 \`\`\`
 
 If your prompt lacks this structure, REWRITE IT before delegating.
-</Caller_Warning>`
+</Caller_Warning>`;
 
 export const MOST_CAPABLE_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on COMPLEX / MOST-CAPABLE tasks.
@@ -113,7 +113,7 @@ Approach:
 - Comprehensive solution design
 - Meticulous execution
 - This is for the most challenging problems
-</Category_Context>`
+</Category_Context>`;
 
 export const WRITING_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on WRITING / PROSE tasks.
@@ -129,7 +129,7 @@ Approach:
 - Draft with care
 - Polish for clarity and impact
 - Documentation, READMEs, articles, technical writing
-</Category_Context>`
+</Category_Context>`;
 
 export const GENERAL_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on GENERAL tasks.
@@ -181,7 +181,7 @@ EXPECTED OUTPUT:
 \`\`\`
 
 The more explicit your prompt, the better the results.
-</Caller_Warning>`
+</Caller_Warning>`;
 
 export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
   "visual-engineering": {
@@ -197,7 +197,7 @@ export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
     temperature: 0.9,
   },
   quick: {
-    model: "anthropic/claude-haiku-4-5",
+    model: "google/gemini-3-flash-preview",
     temperature: 0.3,
   },
   "most-capable": {
@@ -209,10 +209,11 @@ export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
     temperature: 0.5,
   },
   general: {
-    model: "anthropic/claude-sonnet-4-5",
+    model: "openai/codex-5.2",
     temperature: 0.3,
+    reasoningEffort: "medium",
   },
-}
+};
 
 export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {
   "visual-engineering": VISUAL_CATEGORY_PROMPT_APPEND,
@@ -222,7 +223,7 @@ export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {
   "most-capable": MOST_CAPABLE_CATEGORY_PROMPT_APPEND,
   writing: WRITING_CATEGORY_PROMPT_APPEND,
   general: GENERAL_CATEGORY_PROMPT_APPEND,
-}
+};
 
 export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "visual-engineering": "Frontend, UI/UX, design, styling, animation",
@@ -232,9 +233,9 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "most-capable": "Complex tasks requiring maximum capability",
   writing: "Documentation, prose, technical writing",
   general: "General purpose tasks",
-}
+};
 
-const BUILTIN_CATEGORIES = Object.keys(DEFAULT_CATEGORIES).join(", ")
+const BUILTIN_CATEGORIES = Object.keys(DEFAULT_CATEGORIES).join(", ");
 
 export const SISYPHUS_TASK_DESCRIPTION = `Spawn agent task with category-based or direct agent selection.
 
@@ -251,4 +252,4 @@ MUTUALLY EXCLUSIVE: Provide EITHER category OR agent, not both (unless resuming)
 - Need follow-up on previous result → resume with additional question
 - Multi-turn conversation with same agent → always resume instead of new task
 
-Prompts MUST be in English.`
+Prompts MUST be in English.`;

@@ -1,8 +1,8 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "./types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from "@opencode-ai/sdk";
+import { createAgentToolRestrictions } from "../shared/permission-compat";
+import type { AgentPromptMetadata } from "./types";
 
-const DEFAULT_MODEL = "opencode/grok-code"
+const DEFAULT_MODEL = "google/gemini-3-flash-preview";
 
 export const EXPLORE_PROMPT_METADATA: AgentPromptMetadata = {
   category: "exploration",
@@ -10,7 +10,10 @@ export const EXPLORE_PROMPT_METADATA: AgentPromptMetadata = {
   promptAlias: "Explore",
   keyTrigger: "2+ modules involved → fire `explore` background",
   triggers: [
-    { domain: "Explore", trigger: "Find existing codebase structure, patterns and styles" },
+    {
+      domain: "Explore",
+      trigger: "Find existing codebase structure, patterns and styles",
+    },
   ],
   useWhen: [
     "Multiple search angles needed",
@@ -22,7 +25,7 @@ export const EXPLORE_PROMPT_METADATA: AgentPromptMetadata = {
     "Single keyword/pattern suffices",
     "Known file location",
   ],
-}
+};
 
 export function createExploreAgent(model: string = DEFAULT_MODEL): AgentConfig {
   const restrictions = createAgentToolRestrictions([
@@ -31,7 +34,7 @@ export function createExploreAgent(model: string = DEFAULT_MODEL): AgentConfig {
     "task",
     "sisyphus_task",
     "call_omo_agent",
-  ])
+  ]);
 
   return {
     description:
@@ -119,7 +122,7 @@ Use the right tool for the job:
 - **History/evolution** (when added, who changed): git commands
 
 Flood with parallel calls. Cross-validate findings across multiple tools.`,
-  }
+  };
 }
 
-export const exploreAgent = createExploreAgent()
+export const exploreAgent = createExploreAgent();

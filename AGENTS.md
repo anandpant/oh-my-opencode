@@ -122,16 +122,27 @@ oh-my-opencode/
 
 | Agent | Default Model | Purpose |
 |-------|---------------|---------|
-| Sisyphus | anthropic/claude-opus-4-5 | Primary orchestrator with extended thinking |
-| oracle | openai/gpt-5.2 | Read-only consultation. High-IQ debugging, architecture |
-| librarian | opencode/glm-4.7-free | Multi-repo analysis, docs |
-| explore | opencode/grok-code | Fast codebase exploration |
+| Sisyphus | anthropic/claude-sonnet-4-5 | Primary orchestrator with extended thinking |
+| oracle | openai/gpt-5-2 | Read-only consultation. High-IQ debugging, architecture |
+| librarian | zai-coding-plan/glm-4.7 | Multi-repo analysis, docs (fallback: opencode/glm-4.7-free) |
+| explore | google/gemini-3-flash-preview | Fast codebase exploration |
 | frontend-ui-ux-engineer | google/gemini-3-pro-preview | UI generation |
-| document-writer | google/gemini-3-pro-preview | Technical docs |
+| document-writer | google/gemini-3-flash-preview | Technical docs |
 | multimodal-looker | google/gemini-3-flash | PDF/image analysis |
 | Prometheus (Planner) | anthropic/claude-opus-4-5 | Strategic planning, interview-driven |
 | Metis (Plan Consultant) | anthropic/claude-sonnet-4-5 | Pre-planning analysis |
 | Momus (Plan Reviewer) | anthropic/claude-sonnet-4-5 | Plan validation |
+
+## CATEGORY DEFAULTS
+
+| Category | Model | Purpose |
+|----------|-------|---------|
+| visual-engineering | google/gemini-3-pro-preview | Frontend, UI/UX, design |
+| ultrabrain | openai/gpt-5-2 | Complex business logic, architecture |
+| quick | google/gemini-3-flash-preview | Fast utility tasks |
+| most-capable | anthropic/claude-opus-4-5 | Complex multi-step tasks |
+| general | openai/codex-5.2 (medium) | Balanced general purpose |
+| writing | google/gemini-3-flash-preview | Documentation, prose |
 
 ## COMMANDS
 

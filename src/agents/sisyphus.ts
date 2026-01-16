@@ -1,20 +1,24 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import { isGptModel } from "./types"
-import type { AvailableAgent, AvailableTool, AvailableSkill } from "./sisyphus-prompt-builder"
+import type { AgentConfig } from "@opencode-ai/sdk";
+import type {
+  AvailableAgent,
+  AvailableSkill,
+  AvailableTool,
+} from "./sisyphus-prompt-builder";
 import {
-  buildKeyTriggersSection,
-  buildToolSelectionTable,
-  buildExploreSection,
-  buildLibrarianSection,
-  buildDelegationTable,
-  buildFrontendSection,
-  buildOracleSection,
-  buildHardBlocksSection,
   buildAntiPatternsSection,
+  buildDelegationTable,
+  buildExploreSection,
+  buildFrontendSection,
+  buildHardBlocksSection,
+  buildKeyTriggersSection,
+  buildLibrarianSection,
+  buildOracleSection,
+  buildToolSelectionTable,
   categorizeTools,
-} from "./sisyphus-prompt-builder"
+} from "./sisyphus-prompt-builder";
+import { isGptModel } from "./types";
 
-const DEFAULT_MODEL = "anthropic/claude-opus-4-5"
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4-5";
 
 const SISYPHUS_ROLE_SECTION = `<Role>
 You are "Sisyphus" - Powerful AI Agent with orchestration capabilities from OhMyOpenCode.
@@ -33,7 +37,7 @@ You are "Sisyphus" - Powerful AI Agent with orchestration capabilities from OhMy
 
 **Operating Mode**: You NEVER work alone when specialists are available. Frontend work → delegate. Deep research → parallel background agents (async subagents). Complex architecture → consult Oracle.
 
-</Role>`
+</Role>`;
 
 const SISYPHUS_PHASE0_STEP1_3 = `### Step 0: Check Skills FIRST (BLOCKING)
 
@@ -95,7 +99,7 @@ Then: Raise your concern concisely. Propose an alternative. Ask if they want to 
 I notice [observation]. This might cause [problem] because [reason].
 Alternative: [your suggestion].
 Should I proceed with your original request, or try the alternative?
-\`\`\``
+\`\`\``;
 
 const SISYPHUS_PHASE1 = `## Phase 1 - Codebase Assessment (for Open-ended tasks)
 
@@ -118,7 +122,7 @@ Before following existing patterns, assess whether they're worth following.
 IMPORTANT: If codebase appears undisciplined, verify before assuming:
 - Different patterns may serve different purposes (intentional)
 - Migration might be in progress
-- You might be looking at the wrong reference files`
+- You might be looking at the wrong reference files`;
 
 const SISYPHUS_PRE_DELEGATION_PLANNING = `### Pre-Delegation Planning (MANDATORY)
 
@@ -238,7 +242,7 @@ sisyphus_task(category="visual", ...)
 
 **BLOCKING VIOLATION**: If you call \`sisyphus_task\` without the 4-part declaration, you have violated protocol.
 
-**Recovery**: Stop, declare explicitly, then proceed.`
+**Recovery**: Stop, declare explicitly, then proceed.`;
 
 const SISYPHUS_PARALLEL_EXECUTION = `### Parallel Execution (DEFAULT behavior)
 
@@ -285,14 +289,14 @@ STOP searching when:
 - 2 search iterations yielded no new useful data
 - Direct answer found
 
-**DO NOT over-explore. Time is precious.**`
+**DO NOT over-explore. Time is precious.**`;
 
 const SISYPHUS_PHASE2B_PRE_IMPLEMENTATION = `## Phase 2B - Implementation
 
 ### Pre-Implementation:
 1. If task has 2+ steps → Create todo list IMMEDIATELY, IN SUPER DETAIL. No announcements—just create it.
 2. Mark current task \`in_progress\` before starting
-3. Mark \`completed\` as soon as done (don't batch) - OBSESSIVELY TRACK YOUR WORK USING TODO TOOLS`
+3. Mark \`completed\` as soon as done (don't batch) - OBSESSIVELY TRACK YOUR WORK USING TODO TOOLS`;
 
 const SISYPHUS_DELEGATION_PROMPT_STRUCTURE = `### Delegation Prompt Structure (MANDATORY - ALL 7 sections):
 
@@ -314,7 +318,7 @@ AFTER THE WORK YOU DELEGATED SEEMS DONE, ALWAYS VERIFY THE RESULTS AS FOLLOWING:
 - EXPECTED RESULT CAME OUT?
 - DID THE AGENT FOLLOWED "MUST DO" AND "MUST NOT DO" REQUIREMENTS?
 
-**Vague prompts = rejected. Be exhaustive.**`
+**Vague prompts = rejected. Be exhaustive.**`;
 
 const SISYPHUS_GITHUB_WORKFLOW = `### GitHub Workflow (CRITICAL - When mentioned in issues/PRs):
 
@@ -349,7 +353,7 @@ When you're mentioned in GitHub issues or asked to "look into" something and "cr
 **EMPHASIS**: "Look into" does NOT mean "just investigate and report back." 
 It means "investigate, understand, implement a solution, and create a PR."
 
-**If the user says "look into X and create PR", they expect a PR, not just analysis.**`
+**If the user says "look into X and create PR", they expect a PR, not just analysis.**`;
 
 const SISYPHUS_CODE_CHANGES = `### Code Changes:
 - Match existing patterns (if codebase is disciplined)
@@ -377,7 +381,7 @@ If project has build/test commands, run them at task completion.
 | Test run | Pass (or explicit note of pre-existing failures) |
 | Delegation | Agent result received and verified |
 
-**NO EVIDENCE = NOT COMPLETE.**`
+**NO EVIDENCE = NOT COMPLETE.**`;
 
 const SISYPHUS_PHASE2C = `## Phase 2C - Failure Recovery
 
@@ -395,7 +399,7 @@ const SISYPHUS_PHASE2C = `## Phase 2C - Failure Recovery
 4. **CONSULT** Oracle with full failure context
 5. If Oracle cannot resolve → **ASK USER** before proceeding
 
-**Never**: Leave code in broken state, continue hoping it'll work, delete failing tests to "pass"`
+**Never**: Leave code in broken state, continue hoping it'll work, delete failing tests to "pass"`;
 
 const SISYPHUS_PHASE3 = `## Phase 3 - Completion
 
@@ -412,7 +416,7 @@ If verification fails:
 
 ### Before Delivering Final Answer:
 - Cancel ALL running background tasks: \`background_cancel(all=true)\`
-- This conserves resources and ensures clean workflow completion`
+- This conserves resources and ensures clean workflow completion`;
 
 const SISYPHUS_TASK_MANAGEMENT = `<Task_Management>
 ## Todo Management (CRITICAL)
@@ -469,7 +473,7 @@ I want to make sure I understand correctly.
 
 Should I proceed with [recommendation], or would you prefer differently?
 \`\`\`
-</Task_Management>`
+</Task_Management>`;
 
 const SISYPHUS_TONE_AND_STYLE = `<Tone_and_Style>
 ## Communication Style
@@ -511,7 +515,7 @@ If the user's approach seems problematic:
 - If user is terse, be terse
 - If user wants detail, provide detail
 - Adapt to their communication preference
-</Tone_and_Style>`
+</Tone_and_Style>`;
 
 const SISYPHUS_SOFT_GUIDELINES = `## Soft Guidelines
 
@@ -520,22 +524,26 @@ const SISYPHUS_SOFT_GUIDELINES = `## Soft Guidelines
 - When uncertain about scope, ask
 </Constraints>
 
-`
+`;
 
 function buildDynamicSisyphusPrompt(
   availableAgents: AvailableAgent[],
   availableTools: AvailableTool[] = [],
   availableSkills: AvailableSkill[] = []
 ): string {
-  const keyTriggers = buildKeyTriggersSection(availableAgents, availableSkills)
-  const toolSelection = buildToolSelectionTable(availableAgents, availableTools, availableSkills)
-  const exploreSection = buildExploreSection(availableAgents)
-  const librarianSection = buildLibrarianSection(availableAgents)
-  const frontendSection = buildFrontendSection(availableAgents)
-  const delegationTable = buildDelegationTable(availableAgents)
-  const oracleSection = buildOracleSection(availableAgents)
-  const hardBlocks = buildHardBlocksSection(availableAgents)
-  const antiPatterns = buildAntiPatternsSection(availableAgents)
+  const keyTriggers = buildKeyTriggersSection(availableAgents, availableSkills);
+  const toolSelection = buildToolSelectionTable(
+    availableAgents,
+    availableTools,
+    availableSkills
+  );
+  const exploreSection = buildExploreSection(availableAgents);
+  const librarianSection = buildLibrarianSection(availableAgents);
+  const frontendSection = buildFrontendSection(availableAgents);
+  const delegationTable = buildDelegationTable(availableAgents);
+  const oracleSection = buildOracleSection(availableAgents);
+  const hardBlocks = buildHardBlocksSection(availableAgents);
+  const antiPatterns = buildAntiPatternsSection(availableAgents);
 
   const sections = [
     SISYPHUS_ROLE_SECTION,
@@ -601,9 +609,9 @@ function buildDynamicSisyphusPrompt(
     antiPatterns,
     "",
     SISYPHUS_SOFT_GUIDELINES,
-  ]
+  ];
 
-  return sections.filter((s) => s !== "").join("\n")
+  return sections.filter((s) => s !== "").join("\n");
 }
 
 export function createSisyphusAgent(
@@ -612,32 +620,32 @@ export function createSisyphusAgent(
   availableToolNames?: string[],
   availableSkills?: AvailableSkill[]
 ): AgentConfig {
-  const tools = availableToolNames ? categorizeTools(availableToolNames) : []
-  const skills = availableSkills ?? []
+  const tools = availableToolNames ? categorizeTools(availableToolNames) : [];
+  const skills = availableSkills ?? [];
   const prompt = availableAgents
     ? buildDynamicSisyphusPrompt(availableAgents, tools, skills)
-    : buildDynamicSisyphusPrompt([], tools, skills)
+    : buildDynamicSisyphusPrompt([], tools, skills);
 
   // Note: question permission allows agent to ask user questions via OpenCode's QuestionTool
   // SDK type doesn't include 'question' yet, but OpenCode runtime supports it
-  const permission = { question: "allow" } as AgentConfig["permission"]
+  const permission = { question: "allow" } as AgentConfig["permission"];
   const base = {
     description:
       "Sisyphus - Powerful AI orchestrator from OhMyOpenCode. Plans obsessively with todos, assesses search complexity before exploration, delegates strategically to specialized agents. Uses explore for internal code (parallel-friendly), librarian only for external docs, and always delegates UI work to frontend engineer.",
     mode: "primary" as const,
     model,
-    maxTokens: 64000,
+    maxTokens: 64_000,
     prompt,
     color: "#00CED1",
     permission,
     tools: { call_omo_agent: false },
-  }
+  };
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium" }
+    return { ...base, reasoningEffort: "medium" };
   }
 
-  return { ...base, thinking: { type: "enabled", budgetTokens: 32000 } }
+  return { ...base, thinking: { type: "enabled", budgetTokens: 32_000 } };
 }
 
-export const sisyphusAgent = createSisyphusAgent()
+export const sisyphusAgent = createSisyphusAgent();

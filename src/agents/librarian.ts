@@ -1,7 +1,10 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "./types"
+import type { AgentConfig } from "@opencode-ai/sdk";
+import type { AgentPromptMetadata } from "./types";
 
-const DEFAULT_MODEL = "opencode/glm-4.7-free"
+// Primary: zai-coding-plan/glm-4.7 (user's custom provider)
+// Fallback: opencode/glm-4.7-free (free tier)
+const DEFAULT_MODEL = "zai-coding-plan/glm-4.7";
+const FALLBACK_MODEL = "opencode/glm-4.7-free";
 
 export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
   category: "exploration",
@@ -9,7 +12,11 @@ export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
   promptAlias: "Librarian",
   keyTrigger: "External library/source mentioned → fire `librarian` background",
   triggers: [
-    { domain: "Librarian", trigger: "Unfamiliar packages / libraries, struggles at weird behaviour (to find existing implementation of opensource)" },
+    {
+      domain: "Librarian",
+      trigger:
+        "Unfamiliar packages / libraries, struggles at weird behaviour (to find existing implementation of opensource)",
+    },
   ],
   useWhen: [
     "How do I use [library]?",
@@ -18,9 +25,11 @@ export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
     "Find examples of [library] usage",
     "Working with unfamiliar npm/pip/cargo packages",
   ],
-}
+};
 
-export function createLibrarianAgent(model: string = DEFAULT_MODEL): AgentConfig {
+export function createLibrarianAgent(
+  model: string = DEFAULT_MODEL
+): AgentConfig {
   return {
     description:
       "Specialized codebase understanding agent for multi-repository analysis, searching remote codebases, retrieving official documentation, and finding implementation examples using GitHub CLI, Context7, and Web Search. MUST BE USED when users ask to look up code in remote repositories, explain library internals, or find usage examples in open source.",
@@ -314,7 +323,7 @@ grep_app_searchGitHub(query: "useQuery")
 5. **BE CONCISE**: Facts > opinions, evidence > speculation
 
 `,
-  }
+  };
 }
 
-export const librarianAgent = createLibrarianAgent()
+export const librarianAgent = createLibrarianAgent();

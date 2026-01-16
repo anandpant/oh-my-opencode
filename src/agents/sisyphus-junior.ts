@@ -1,11 +1,11 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import { isGptModel } from "./types"
-import type { AgentOverrideConfig, CategoryConfig } from "../config/schema"
+import type { AgentConfig } from "@opencode-ai/sdk";
+import type { AgentOverrideConfig, CategoryConfig } from "../config/schema";
 import {
   createAgentToolRestrictions,
   migrateAgentConfig,
   supportsNewPermissionSystem,
-} from "../shared/permission-compat"
+} from "../shared/permission-compat";
+import { isGptModel } from "./types";
 
 const SISYPHUS_JUNIOR_PROMPT = `<Role>
 Sisyphus-Junior - Focused executor from OhMyOpenCode.
@@ -67,118 +67,126 @@ Task NOT complete without:
 - Start immediately. No acknowledgments.
 - Match user's communication style.
 - Dense > verbose.
-</Style>`
+</Style>`;
 
 function buildSisyphusJuniorPrompt(promptAppend?: string): string {
-  if (!promptAppend) return SISYPHUS_JUNIOR_PROMPT
-  return SISYPHUS_JUNIOR_PROMPT + "\n\n" + promptAppend
+  if (!promptAppend) return SISYPHUS_JUNIOR_PROMPT;
+  return SISYPHUS_JUNIOR_PROMPT + "\n\n" + promptAppend;
 }
 
 // Core tools that Sisyphus-Junior must NEVER have access to
 // Note: call_omo_agent is ALLOWED so subagents can spawn explore/librarian
-const BLOCKED_TOOLS = ["task", "sisyphus_task"]
+const BLOCKED_TOOLS = ["task", "sisyphus_task"];
 
 export const SISYPHUS_JUNIOR_DEFAULTS = {
-  model: "anthropic/claude-sonnet-4-5",
+  model: "anthropic/claude-opus-4-5",
   temperature: 0.1,
-} as const
+} as const;
 
 export function createSisyphusJuniorAgentWithOverrides(
   override: AgentOverrideConfig | undefined,
   systemDefaultModel?: string
 ): AgentConfig {
   if (override?.disable) {
-    override = undefined
+    override = undefined;
   }
 
-  const model = override?.model ?? systemDefaultModel ?? SISYPHUS_JUNIOR_DEFAULTS.model
-  const temperature = override?.temperature ?? SISYPHUS_JUNIOR_DEFAULTS.temperature
+  const model =
+    override?.model ?? systemDefaultModel ?? SISYPHUS_JUNIOR_DEFAULTS.model;
+  const temperature =
+    override?.temperature ?? SISYPHUS_JUNIOR_DEFAULTS.temperature;
 
-  const promptAppend = override?.prompt_append
-  const prompt = buildSisyphusJuniorPrompt(promptAppend)
+  const promptAppend = override?.prompt_append;
+  const prompt = buildSisyphusJuniorPrompt(promptAppend);
 
-  const baseRestrictions = createAgentToolRestrictions(BLOCKED_TOOLS)
+  const baseRestrictions = createAgentToolRestrictions(BLOCKED_TOOLS);
 
-  let toolsConfig: Record<string, unknown> = {}
+  let toolsConfig: Record<string, unknown> = {};
   if (supportsNewPermissionSystem()) {
-    const userPermission = (override?.permission ?? {}) as Record<string, string>
-    const basePermission = (baseRestrictions as { permission: Record<string, string> }).permission
-    const merged: Record<string, string> = { ...userPermission }
+    const userPermission = (override?.permission ?? {}) as Record<
+      string,
+      string
+    >;
+    const basePermission = (
+      baseRestrictions as { permission: Record<string, string> }
+    ).permission;
+    const merged: Record<string, string> = { ...userPermission };
     for (const tool of BLOCKED_TOOLS) {
-      merged[tool] = "deny"
+      merged[tool] = "deny";
     }
-    merged.call_omo_agent = "allow"
-    toolsConfig = { permission: { ...merged, ...basePermission } }
+    merged.call_omo_agent = "allow";
+    toolsConfig = { permission: { ...merged, ...basePermission } };
   } else {
-    const userTools = override?.tools ?? {}
-    const baseTools = (baseRestrictions as { tools: Record<string, boolean> }).tools
-    const merged: Record<string, boolean> = { ...userTools }
+    const userTools = override?.tools ?? {};
+    const baseTools = (baseRestrictions as { tools: Record<string, boolean> })
+      .tools;
+    const merged: Record<string, boolean> = { ...userTools };
     for (const tool of BLOCKED_TOOLS) {
-      merged[tool] = false
+      merged[tool] = false;
     }
-    merged.call_omo_agent = true
-    toolsConfig = { tools: { ...merged, ...baseTools } }
+    merged.call_omo_agent = true;
+    toolsConfig = { tools: { ...merged, ...baseTools } };
   }
 
   const base: AgentConfig = {
-    description: override?.description ??
+    description:
+      override?.description ??
       "Sisyphus-Junior - Focused task executor. Same discipline, no delegation.",
     mode: "subagent" as const,
     model,
     temperature,
-    maxTokens: 64000,
+    maxTokens: 64_000,
     prompt,
     color: override?.color ?? "#20B2AA",
     ...toolsConfig,
-  }
+  };
 
   if (override?.top_p !== undefined) {
-    base.top_p = override.top_p
+    base.top_p = override.top_p;
   }
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium" } as AgentConfig
+    return { ...base, reasoningEffort: "medium" } as AgentConfig;
   }
 
   return {
     ...base,
-    thinking: { type: "enabled", budgetTokens: 32000 },
-  } as AgentConfig
+    thinking: { type: "enabled", budgetTokens: 32_000 },
+  } as AgentConfig;
 }
 
 export function createSisyphusJuniorAgent(
   categoryConfig: CategoryConfig,
   promptAppend?: string
 ): AgentConfig {
-  const prompt = buildSisyphusJuniorPrompt(promptAppend)
-  const model = categoryConfig.model
-  const baseRestrictions = createAgentToolRestrictions(BLOCKED_TOOLS)
+  const prompt = buildSisyphusJuniorPrompt(promptAppend);
+  const model = categoryConfig.model;
+  const baseRestrictions = createAgentToolRestrictions(BLOCKED_TOOLS);
   const mergedConfig = migrateAgentConfig({
     ...baseRestrictions,
     ...(categoryConfig.tools ? { tools: categoryConfig.tools } : {}),
-  })
-
+  });
 
   const base: AgentConfig = {
     description:
       "Sisyphus-Junior - Focused task executor. Same discipline, no delegation.",
     mode: "subagent" as const,
     model,
-    maxTokens: categoryConfig.maxTokens ?? 64000,
+    maxTokens: categoryConfig.maxTokens ?? 64_000,
     prompt,
     color: "#20B2AA",
     ...mergedConfig,
-  }
+  };
 
   if (categoryConfig.temperature !== undefined) {
-    base.temperature = categoryConfig.temperature
+    base.temperature = categoryConfig.temperature;
   }
   if (categoryConfig.top_p !== undefined) {
-    base.top_p = categoryConfig.top_p
+    base.top_p = categoryConfig.top_p;
   }
 
   if (categoryConfig.thinking) {
-    return { ...base, thinking: categoryConfig.thinking } as AgentConfig
+    return { ...base, thinking: categoryConfig.thinking } as AgentConfig;
   }
 
   if (categoryConfig.reasoningEffort) {
@@ -186,15 +194,15 @@ export function createSisyphusJuniorAgent(
       ...base,
       reasoningEffort: categoryConfig.reasoningEffort,
       textVerbosity: categoryConfig.textVerbosity,
-    } as AgentConfig
+    } as AgentConfig;
   }
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium" } as AgentConfig
+    return { ...base, reasoningEffort: "medium" } as AgentConfig;
   }
 
   return {
     ...base,
-    thinking: { type: "enabled", budgetTokens: 32000 },
-  } as AgentConfig
+    thinking: { type: "enabled", budgetTokens: 32_000 },
+  } as AgentConfig;
 }

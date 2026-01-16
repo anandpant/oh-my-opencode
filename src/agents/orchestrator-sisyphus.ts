@@ -1,9 +1,12 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "./types"
-import type { AvailableAgent, AvailableSkill } from "./sisyphus-prompt-builder"
-import type { CategoryConfig } from "../config/schema"
-import { DEFAULT_CATEGORIES, CATEGORY_DESCRIPTIONS } from "../tools/sisyphus-task/constants"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from "@opencode-ai/sdk";
+import type { CategoryConfig } from "../config/schema";
+import { createAgentToolRestrictions } from "../shared/permission-compat";
+import {
+  CATEGORY_DESCRIPTIONS,
+  DEFAULT_CATEGORIES,
+} from "../tools/sisyphus-task/constants";
+import type { AvailableAgent, AvailableSkill } from "./sisyphus-prompt-builder";
+import type { AgentPromptMetadata } from "./types";
 
 /**
  * Orchestrator Sisyphus - Master Orchestrator Agent
@@ -13,10 +16,10 @@ import { createAgentToolRestrictions } from "../shared/permission-compat"
  */
 
 export interface OrchestratorContext {
-  model?: string
-  availableAgents?: AvailableAgent[]
-  availableSkills?: AvailableSkill[]
-  userCategories?: Record<string, CategoryConfig>
+  model?: string;
+  availableAgents?: AvailableAgent[];
+  availableSkills?: AvailableSkill[];
+  userCategories?: Record<string, CategoryConfig>;
 }
 
 function buildAgentSelectionSection(agents: AvailableAgent[]): string {
@@ -31,13 +34,13 @@ function buildAgentSelectionSection(agents: AvailableAgent[]): string {
 | \`frontend-ui-ux-engineer\` | Visual design, UI implementation |
 | \`document-writer\` | README, API docs, guides |
 | \`git-master\` | Git commits (ALWAYS use for commits) |
-| \`debugging-master\` | Complex debugging sessions |`
+| \`debugging-master\` | Complex debugging sessions |`;
   }
 
   const rows = agents.map((a) => {
-    const shortDesc = a.description.split(".")[0] || a.description
-    return `| \`${a.name}\` | ${shortDesc} |`
-  })
+    const shortDesc = a.description.split(".")[0] || a.description;
+    return `| \`${a.name}\` | ${shortDesc} |`;
+  });
 
   return `##### Option B: Use AGENT directly (for specialized experts)
 
@@ -45,16 +48,18 @@ function buildAgentSelectionSection(agents: AvailableAgent[]): string {
 |-------|----------|
 ${rows.join("\n")}
 | \`git-master\` | Git commits (ALWAYS use for commits) |
-| \`debugging-master\` | Complex debugging sessions |`
+| \`debugging-master\` | Complex debugging sessions |`;
 }
 
-function buildCategorySection(userCategories?: Record<string, CategoryConfig>): string {
-  const allCategories = { ...DEFAULT_CATEGORIES, ...userCategories }
+function buildCategorySection(
+  userCategories?: Record<string, CategoryConfig>
+): string {
+  const allCategories = { ...DEFAULT_CATEGORIES, ...userCategories };
   const categoryRows = Object.entries(allCategories).map(([name, config]) => {
-    const temp = config.temperature ?? 0.5
-    const bestFor = CATEGORY_DESCRIPTIONS[name] ?? "General tasks"
-    return `| \`${name}\` | ${temp} | ${bestFor} |`
-  })
+    const temp = config.temperature ?? 0.5;
+    const bestFor = CATEGORY_DESCRIPTIONS[name] ?? "General tasks";
+    return `| \`${name}\` | ${temp} | ${bestFor} |`;
+  });
 
   return `##### Option A: Use CATEGORY (for domain-specific work)
 
@@ -67,18 +72,18 @@ ${categoryRows.join("\n")}
 \`\`\`typescript
 sisyphus_task(category="visual-engineering", prompt="...")      // UI/frontend work
 sisyphus_task(category="ultrabrain", prompt="...")     // Backend/strategic work
-\`\`\``
+\`\`\``;
 }
 
 function buildSkillsSection(skills: AvailableSkill[]): string {
   if (skills.length === 0) {
-    return ""
+    return "";
   }
 
   const skillRows = skills.map((s) => {
-    const shortDesc = s.description.split(".")[0] || s.description
-    return `| \`${s.name}\` | ${shortDesc} |`
-  })
+    const shortDesc = s.description.split(".")[0] || s.description;
+    return `| \`${s.name}\` | ${shortDesc} |`;
+  });
 
   return `
 #### 3.2.2: Skill Selection (PREPEND TO PROMPT)
@@ -103,24 +108,34 @@ sisyphus_task(category="visual-engineering", skills=["frontend-ui-ux", "playwrig
 **IMPORTANT:**
 - Skills are OPTIONAL - only include if task clearly benefits from specialized guidance
 - Skills get prepended to the subagent's prompt, providing domain-specific instructions
-- If no appropriate skill exists, omit the \`skills\` parameter entirely`
+- If no appropriate skill exists, omit the \`skills\` parameter entirely`;
 }
 
-function buildDecisionMatrix(agents: AvailableAgent[], userCategories?: Record<string, CategoryConfig>): string {
-  const allCategories = { ...DEFAULT_CATEGORIES, ...userCategories }
-  const hasVisual = "visual-engineering" in allCategories
-  const hasStrategic = "ultrabrain" in allCategories
-  
-  const rows: string[] = []
-  if (hasVisual) rows.push("| Implement frontend feature | `category=\"visual-engineering\"` |")
-  if (hasStrategic) rows.push("| Implement backend feature | `category=\"ultrabrain\"` |")
-  
-  const agentNames = agents.map((a) => a.name)
-  if (agentNames.includes("oracle")) rows.push("| Code review / architecture | `agent=\"oracle\"` |")
-  if (agentNames.includes("explore")) rows.push("| Find code in codebase | `agent=\"explore\"` |")
-  if (agentNames.includes("librarian")) rows.push("| Look up library docs | `agent=\"librarian\"` |")
-  rows.push("| Git commit | `agent=\"git-master\"` |")
-  rows.push("| Debug complex issue | `agent=\"debugging-master\"` |")
+function buildDecisionMatrix(
+  agents: AvailableAgent[],
+  userCategories?: Record<string, CategoryConfig>
+): string {
+  const allCategories = { ...DEFAULT_CATEGORIES, ...userCategories };
+  const hasVisual = "visual-engineering" in allCategories;
+  const hasStrategic = "ultrabrain" in allCategories;
+
+  const rows: string[] = [];
+  if (hasVisual)
+    rows.push(
+      '| Implement frontend feature | `category="visual-engineering"` |'
+    );
+  if (hasStrategic)
+    rows.push('| Implement backend feature | `category="ultrabrain"` |');
+
+  const agentNames = agents.map((a) => a.name);
+  if (agentNames.includes("oracle"))
+    rows.push('| Code review / architecture | `agent="oracle"` |');
+  if (agentNames.includes("explore"))
+    rows.push('| Find code in codebase | `agent="explore"` |');
+  if (agentNames.includes("librarian"))
+    rows.push('| Look up library docs | `agent="librarian"` |');
+  rows.push('| Git commit | `agent="git-master"` |');
+  rows.push('| Debug complex issue | `agent="debugging-master"` |');
 
   return `##### Decision Matrix
 
@@ -128,7 +143,7 @@ function buildDecisionMatrix(agents: AvailableAgent[], userCategories?: Record<s
 |-----------|-----|
 ${rows.join("\n")}
 
-**NEVER provide both category AND agent - they are mutually exclusive.**`
+**NEVER provide both category AND agent - they are mutually exclusive.**`;
 }
 
 export const ORCHESTRATOR_SISYPHUS_SYSTEM_PROMPT = `
@@ -1415,32 +1430,33 @@ You are the MASTER ORCHESTRATOR. Your job is to:
 
 NEVER skip steps. NEVER rush. Complete ALL tasks.
 </guide>
-`
+`;
 
 function buildDynamicOrchestratorPrompt(ctx?: OrchestratorContext): string {
-  const agents = ctx?.availableAgents ?? []
-  const skills = ctx?.availableSkills ?? []
-  const userCategories = ctx?.userCategories
+  const agents = ctx?.availableAgents ?? [];
+  const skills = ctx?.availableSkills ?? [];
+  const userCategories = ctx?.userCategories;
 
-  const categorySection = buildCategorySection(userCategories)
-  const agentSection = buildAgentSelectionSection(agents)
-  const decisionMatrix = buildDecisionMatrix(agents, userCategories)
-  const skillsSection = buildSkillsSection(skills)
+  const categorySection = buildCategorySection(userCategories);
+  const agentSection = buildAgentSelectionSection(agents);
+  const decisionMatrix = buildDecisionMatrix(agents, userCategories);
+  const skillsSection = buildSkillsSection(skills);
 
-  return ORCHESTRATOR_SISYPHUS_SYSTEM_PROMPT
-    .replace("{CATEGORY_SECTION}", categorySection)
+  return ORCHESTRATOR_SISYPHUS_SYSTEM_PROMPT.replace(
+    "{CATEGORY_SECTION}",
+    categorySection
+  )
     .replace("{AGENT_SECTION}", agentSection)
     .replace("{DECISION_MATRIX}", decisionMatrix)
-    .replace("{SKILLS_SECTION}", skillsSection)
+    .replace("{SKILLS_SECTION}", skillsSection);
 }
 
-const DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
+const DEFAULT_MODEL = "anthropic/claude-opus-4-5";
 
-export function createOrchestratorSisyphusAgent(ctx?: OrchestratorContext): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "task",
-    "call_omo_agent",
-  ])
+export function createOrchestratorSisyphusAgent(
+  ctx?: OrchestratorContext
+): AgentConfig {
+  const restrictions = createAgentToolRestrictions(["task", "call_omo_agent"]);
   return {
     description:
       "Orchestrates work via sisyphus_task() to complete ALL tasks in a todo list until fully done",
@@ -1448,13 +1464,14 @@ export function createOrchestratorSisyphusAgent(ctx?: OrchestratorContext): Agen
     model: ctx?.model ?? DEFAULT_MODEL,
     temperature: 0.1,
     prompt: buildDynamicOrchestratorPrompt(ctx),
-    thinking: { type: "enabled", budgetTokens: 32000 },
+    thinking: { type: "enabled", budgetTokens: 32_000 },
     color: "#10B981",
     ...restrictions,
-  } as AgentConfig
+  } as AgentConfig;
 }
 
-export const orchestratorSisyphusAgent: AgentConfig = createOrchestratorSisyphusAgent()
+export const orchestratorSisyphusAgent: AgentConfig =
+  createOrchestratorSisyphusAgent();
 
 export const orchestratorSisyphusPromptMetadata: AgentPromptMetadata = {
   category: "advisor",
@@ -1482,4 +1499,4 @@ export const orchestratorSisyphusPromptMetadata: AgentPromptMetadata = {
   ],
   keyTrigger:
     "Todo list path provided OR multiple tasks requiring multi-agent orchestration",
-}
+};

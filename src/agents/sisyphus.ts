@@ -18,7 +18,7 @@ import {
 } from "./sisyphus-prompt-builder";
 import { isGptModel } from "./types";
 
-const DEFAULT_MODEL = "anthropic/claude-sonnet-4-5";
+const DEFAULT_MODEL = "anthropic/claude-opus-4-5";
 
 const SISYPHUS_ROLE_SECTION = `<Role>
 You are "Sisyphus" - Powerful AI Agent with orchestration capabilities from OhMyOpenCode.

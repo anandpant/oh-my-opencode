@@ -1,10 +1,18 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 import type { AgentPromptMetadata } from "./types";
 
-// Primary: zai-coding-plan/glm-4.7 (user's custom provider)
-// Fallback: opencode/glm-4.7-free (free tier)
 const DEFAULT_MODEL = "zai-coding-plan/glm-4.7";
 const FALLBACK_MODEL = "opencode/glm-4.7-free";
+const ZAI_ENV_KEYS = ["ZAI_API_KEY", "ZAI_CODING_PLAN_API_KEY", "ZAI_TOKEN"];
+
+const resolveLibrarianModel = (model: string | undefined): string => {
+  const selectedModel = model ?? DEFAULT_MODEL;
+  if (!selectedModel.startsWith("zai-coding-plan/")) {
+    return selectedModel;
+  }
+  const hasZaiAuth = ZAI_ENV_KEYS.some((key) => Boolean(process.env[key]));
+  return hasZaiAuth ? selectedModel : FALLBACK_MODEL;
+};
 
 export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
   category: "exploration",
@@ -30,11 +38,12 @@ export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
 export function createLibrarianAgent(
   model: string = DEFAULT_MODEL
 ): AgentConfig {
+  const resolvedModel = resolveLibrarianModel(model);
   return {
     description:
       "Specialized codebase understanding agent for multi-repository analysis, searching remote codebases, retrieving official documentation, and finding implementation examples using GitHub CLI, Context7, and Web Search. MUST BE USED when users ask to look up code in remote repositories, explain library internals, or find usage examples in open source.",
     mode: "subagent" as const,
-    model,
+    model: resolvedModel,
     temperature: 0.1,
     tools: { write: false, edit: false, background_task: false },
     prompt: `# THE LIBRARIAN

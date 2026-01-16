@@ -209,7 +209,7 @@ export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
     temperature: 0.5,
   },
   general: {
-    model: "openai/codex-5.2",
+    model: "openai/gpt-5.2-codex",
     temperature: 0.3,
     reasoningEffort: "medium",
   },

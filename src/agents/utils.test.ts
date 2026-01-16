@@ -90,6 +90,16 @@ describe("createBuiltinAgents with model overrides", () => {
     expect(agents.oracle.textVerbosity).toBeUndefined()
   })
 
+  test("multimodal-looker default model uses gemini-3-flash-preview", async () => {
+    // #given - no overrides
+
+    // #when
+    const agents = await createBuiltinAgents()
+
+    // #then
+    expect(agents["multimodal-looker"].model).toBe("google/gemini-3-flash-preview")
+  })
+
   test("non-model overrides are still applied after factory rebuild", async () => {
     // #given
     const overrides = {

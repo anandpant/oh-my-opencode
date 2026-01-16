@@ -2,6 +2,8 @@ import type { AgentConfig } from "@opencode-ai/sdk"
 import type { AgentPromptMetadata } from "./types"
 import { createAgentToolAllowlist } from "../shared/permission-compat"
 
+const DEFAULT_MODEL = "google/gemini-3-flash-preview"
+
 export const MULTIMODAL_LOOKER_PROMPT_METADATA: AgentPromptMetadata = {
   category: "utility",
   cost: "CHEAP",
@@ -9,7 +11,9 @@ export const MULTIMODAL_LOOKER_PROMPT_METADATA: AgentPromptMetadata = {
   triggers: [],
 }
 
-export function createMultimodalLookerAgent(model: string): AgentConfig {
+export function createMultimodalLookerAgent(
+  model: string = DEFAULT_MODEL
+): AgentConfig {
   const restrictions = createAgentToolAllowlist(["read"])
 
   return {
@@ -53,4 +57,3 @@ Response rules:
 Your output goes straight to the main agent for continued work.`,
   }
 }
-

@@ -412,10 +412,11 @@ export function createSisyphusAgent(
     prompt,
     color: "#00CED1",
     permission,
+  };
   }
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium" }
+    return { ...base, reasoningEffort: "high" }
   }
 
   return { ...base, thinking: { type: "enabled", budgetTokens: 32000 } }

@@ -128,8 +128,5 @@ export function createSisyphusJuniorAgentWithOverrides(
     return { ...base, reasoningEffort: "medium" } as AgentConfig
   }
 
-  return {
-    ...base,
-    thinking: { type: "enabled", budgetTokens: 32000 },
-  } as AgentConfig
+  return { ...base } as AgentConfig
 }

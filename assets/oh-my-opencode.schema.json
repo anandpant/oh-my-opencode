@@ -76,7 +76,9 @@
           "delegate-task-retry",
           "prometheus-md-only",
           "start-work",
-          "atlas"
+          "atlas",
+          "testing-agent-trigger",
+          "session-auto-export"
         ]
       }
     },
@@ -2167,6 +2169,79 @@
         "include_co_authored_by": {
           "default": true,
           "type": "boolean"
+        }
+      }
+    },
+    "testing_agent_trigger": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "patterns": {
+          "default": [
+            "apps/web/**",
+            "src/web/**",
+            "packages/web/**"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notifyOnTrigger": {
+          "default": true,
+          "type": "boolean"
+        },
+        "agentName": {
+          "default": "testing-agent",
+          "type": "string"
+        },
+        "agentPrompt": {
+          "type": "string"
+        },
+        "debounceMs": {
+          "default": 2000,
+          "type": "number",
+          "minimum": 500,
+          "maximum": 10000
+        },
+        "scenarioDir": {
+          "default": "test_scenarios/agent-browser",
+          "type": "string"
+        }
+      }
+    },
+    "session_auto_export": {
+      "type": "object",
+      "properties": {
+        "convexUrl": {
+          "type": "string"
+        },
+        "includeMessages": {
+          "default": false,
+          "type": "boolean"
+        },
+        "includeTodos": {
+          "default": true,
+          "type": "boolean"
+        },
+        "debounceMs": {
+          "default": 5000,
+          "type": "number",
+          "minimum": 1000,
+          "maximum": 30000
+        },
+        "skipSubagentSessions": {
+          "default": true,
+          "type": "boolean"
+        },
+        "maxTrackedSessions": {
+          "default": 100,
+          "type": "number",
+          "minimum": 10,
+          "maximum": 1000
         }
       }
     }

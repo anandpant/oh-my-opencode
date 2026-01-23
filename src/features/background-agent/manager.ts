@@ -6,6 +6,7 @@ import type {
   ResumeInput,
 } from "./types"
 import { log, getAgentToolRestrictions } from "../../shared"
+import { resolveSubagentDirectory } from "../../shared/agent-directory"
 import { ConcurrencyManager } from "./concurrency"
 import type { BackgroundTaskConfig } from "../../config/schema"
 
@@ -199,7 +200,8 @@ export class BackgroundManager {
       return null
     })
     const parentDirectory = parentSession?.data?.directory ?? this.directory
-    log(`[background-agent] Parent dir: ${parentSession?.data?.directory}, using: ${parentDirectory}`)
+    const sessionDirectory = resolveSubagentDirectory(input.agent, parentDirectory)
+    log(`[background-agent] Parent dir: ${parentSession?.data?.directory}, using: ${sessionDirectory}`)
 
     const createResult = await this.client.session.create({
       body: {
@@ -207,7 +209,7 @@ export class BackgroundManager {
         title: `Background: ${input.description}`,
       },
       query: {
-        directory: parentDirectory,
+        directory: sessionDirectory,
       },
     }).catch((error) => {
       this.concurrencyManager.release(concurrencyKey)

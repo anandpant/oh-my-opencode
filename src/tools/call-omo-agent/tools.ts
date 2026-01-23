@@ -8,6 +8,7 @@ import { log, getAgentToolRestrictions, includesCaseInsensitive } from "../../sh
 import { consumeNewMessages } from "../../shared/session-cursor"
 import { findFirstMessageWithAgent, findNearestMessageWithFields, MESSAGE_STORAGE } from "../../features/hook-message-injector"
 import { getSessionAgent } from "../../features/claude-code-session-state"
+import { resolveSubagentDirectory } from "../../shared/agent-directory"
 
 function getMessageDir(sessionID: string): string | null {
   if (!existsSync(MESSAGE_STORAGE)) return null
@@ -158,6 +159,7 @@ async function executeSync(
     })
     log(`[call_omo_agent] Parent session dir: ${parentSession?.data?.directory}, fallback: ${ctx.directory}`)
     const parentDirectory = parentSession?.data?.directory ?? ctx.directory
+    const sessionDirectory = resolveSubagentDirectory(args.subagent_type, parentDirectory)
 
     const createResult = await ctx.client.session.create({
       body: {
@@ -165,7 +167,7 @@ async function executeSync(
         title: `${args.description} (@${args.subagent_type} subagent)`,
       },
       query: {
-        directory: parentDirectory,
+        directory: sessionDirectory,
       },
     })
 

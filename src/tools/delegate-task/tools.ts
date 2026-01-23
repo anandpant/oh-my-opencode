@@ -12,6 +12,7 @@ import { getTaskToastManager } from "../../features/task-toast-manager"
 import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
 import { subagentSessions, getSessionAgent } from "../../features/claude-code-session-state"
 import { log, getAgentToolRestrictions, resolveModel, getOpenCodeConfigPaths, findByNameCaseInsensitive, equalsIgnoreCase } from "../../shared"
+import { resolveSubagentDirectory } from "../../shared/agent-directory"
 import { fetchAvailableModels } from "../../shared/model-availability"
 import { resolveModelWithFallback } from "../../shared/model-resolver"
 import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
@@ -819,6 +820,7 @@ To resume this session: resume="${task.sessionID}"`
           ? await client.session.get({ path: { id: ctx.sessionID } }).catch(() => null)
           : null
         const parentDirectory = parentSession?.data?.directory ?? directory
+        const sessionDirectory = resolveSubagentDirectory(agentToUse, parentDirectory)
 
         const createResult = await client.session.create({
           body: {
@@ -826,7 +828,7 @@ To resume this session: resume="${task.sessionID}"`
             title: `Task: ${args.description}`,
           },
           query: {
-            directory: parentDirectory,
+            directory: sessionDirectory,
           },
         })
 

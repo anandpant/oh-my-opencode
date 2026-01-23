@@ -28,7 +28,7 @@ describe("createBuiltinAgents with model overrides", () => {
 
     // #then
     expect(agents.Sisyphus.model).toBe("github-copilot/gpt-5.2")
-    expect(agents.Sisyphus.reasoningEffort).toBe("medium")
+    expect(agents.Sisyphus.reasoningEffort).toBe("high")
     expect(agents.Sisyphus.thinking).toBeUndefined()
   })
 
@@ -94,7 +94,7 @@ describe("createBuiltinAgents with model overrides", () => {
     // #given - no overrides
 
     // #when
-    const agents = await createBuiltinAgents()
+    const agents = await createBuiltinAgents([], {}, undefined, TEST_DEFAULT_MODEL)
 
     // #then
     expect(agents["multimodal-looker"].model).toBe("google/gemini-3-flash-preview")
